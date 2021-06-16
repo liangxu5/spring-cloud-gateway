@@ -32,6 +32,15 @@ public class KylinRouteRaw {
 
 	private String cluster;
 
+	private String host;
+
+	public KylinRouteRaw(String type, String host, List<Server> backends) {
+		this.backends = backends;
+		this.type = type;
+		this.host = host;
+
+	}
+
 	public static KylinRouteRaw convert(Kylin3XRouteDO kylin3XRouteDO) {
 		if (null == kylin3XRouteDO) {
 			log.error("Failed to convert KylinRouteDO to KylinRouteRaw, cause by kylinRouteDO is null!");

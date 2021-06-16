@@ -1,5 +1,6 @@
 package io.kyligence.kap.gateway.health;
 
+import com.alibaba.fastjson.JSONObject;
 import com.netflix.loadbalancer.IPing;
 import com.netflix.loadbalancer.Server;
 import io.kyligence.kap.gateway.constant.KylinGatewayVersion;
@@ -16,15 +17,18 @@ import java.util.Objects;
 
 @Component
 @Slf4j
-@ConditionalOnProperty(name = "kylin.gateway.ke.version", havingValue = KylinGatewayVersion.KYLIN_4X)
-public class KylinPing implements IPing {
+@ConditionalOnProperty(name = "kylin.gateway.ke.version", havingValue = KylinGatewayVersion.MDX)
+public class MdxPing implements IPing {
 	private static final String HEALTH_URL_FROMAT = "http://%s%s";
 
 	@Autowired
 	private RestTemplate restTemplate;
 
-	@Value("${kylin.gateway.health.check-url:/kylin/api/health}")
+	@Value("${kylin.gateway.health.check-url:/api/system/health}")
 	private String healthUrl;
+
+	@Value("${kylin.gateway.health.load_url:/api/system/load}")
+	private String loadUrl;
 
 	@Override
 	public boolean isAlive(Server server) {
@@ -64,5 +68,28 @@ public class KylinPing implements IPing {
 
 		return ErrorLevel.WARN;
 	}
+
+	public Double getServerLoad(Server server) {
+
+		if (Objects.isNull(server)) {
+			return Double.MAX_VALUE;
+		}
+
+		String heathLoadUrl = String.format(HEALTH_URL_FROMAT, server.getId(), loadUrl);
+
+		try {
+			ResponseEntity<String> responseEntity = restTemplate.getForEntity(heathLoadUrl, String.class);
+			if (responseEntity.getStatusCode().is2xxSuccessful()) {
+				String result = responseEntity.getBody();
+				JSONObject jsonObject = JSONObject.parseObject(result);
+				String load = jsonObject.getString("msg");
+				return Double.valueOf(load);
+			}
+		} catch (Exception e) {
+			// Nothing to do
+		}
+		return Double.MAX_VALUE;
+	}
+
 
 }

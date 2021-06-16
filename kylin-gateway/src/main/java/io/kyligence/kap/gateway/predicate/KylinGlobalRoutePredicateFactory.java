@@ -3,12 +3,14 @@ package io.kyligence.kap.gateway.predicate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import io.kyligence.kap.gateway.constant.KylinGatewayVersion;
 import io.kyligence.kap.gateway.utils.UrlProjectUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.reactivestreams.Publisher;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.handler.AsyncPredicate;
 import org.springframework.cloud.gateway.handler.predicate.AbstractRoutePredicateFactory;
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
@@ -39,6 +41,9 @@ public class KylinGlobalRoutePredicateFactory extends AbstractRoutePredicateFact
 	private final List<HttpMessageReader<?>> messageReaders;
 
 	private final Class inClass;
+
+	@Value(value = "${kylin.gateway.ke.version:mdx}")
+	private String version;
 
 	public KylinGlobalRoutePredicateFactory() {
 		super(KylinGlobalRoutePredicateFactory.Config.class);
@@ -114,6 +119,12 @@ public class KylinGlobalRoutePredicateFactory extends AbstractRoutePredicateFact
 		return new AsyncPredicate<ServerWebExchange>() {
 			@Override
 			public Publisher<Boolean> apply(ServerWebExchange exchange) {
+
+
+				if (KylinGatewayVersion.MDX.equals(version)) {
+					return Mono.just(true);
+				}
+
 				if (Objects.nonNull(exchange.getAttribute(PROJECT_FLAG))) {
 					if (Objects.isNull(exchange.getAttribute(PROJECT_KEY))) {
 						return Mono.just(true);

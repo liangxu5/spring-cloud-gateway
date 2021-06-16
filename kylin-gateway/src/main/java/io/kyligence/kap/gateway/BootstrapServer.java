@@ -18,11 +18,14 @@ package io.kyligence.kap.gateway;
 
 import com.netflix.loadbalancer.IPing;
 import com.netflix.loadbalancer.IPingStrategy;
+import io.kyligence.kap.gateway.constant.KylinGatewayVersion;
 import io.kyligence.kap.gateway.health.ConcurrentPingStrategy;
+import io.kyligence.kap.gateway.health.MdxPingStrategy;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -36,6 +39,10 @@ import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
 public class BootstrapServer {
+
+	@Value(value = "${kylin.gateway.ke.version:4x}")
+	private String version;
+
 	public static void main(String[] args) {
 		SpringApplication.run(BootstrapServer.class, args);
 	}
@@ -58,7 +65,11 @@ public class BootstrapServer {
 	@Bean
 	@ConfigurationProperties(prefix = "kylin.gateway.health.ping-strategy")
 	public IPingStrategy pingStrategy(IPing ping) {
-		return new ConcurrentPingStrategy(ping);
+		if (KylinGatewayVersion.MDX.equals(version)) {
+			return new MdxPingStrategy(ping);
+		} else {
+			return new ConcurrentPingStrategy(ping);
+		}
 	}
 
 }

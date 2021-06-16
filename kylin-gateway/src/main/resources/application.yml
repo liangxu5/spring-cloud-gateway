@@ -1,3 +1,23 @@
+
+server.port: 7777
+
+mdx:
+  weight:
+    memory: 0.5
+    query: 0.5
+  cacheTime: 600
+  proxy:
+    - mdx-ke4:
+      type: mdx
+      host: 10.211.55.2:7777
+#      config:
+#        connect_timeout: 30s
+#        proxy_send_timeout: 1800s
+#        proxy_read_timeout: 1800s
+      servers:
+        - 127.0.0.1:7080
+        - 127.0.0.1:7081
+
 spring:
   application:
     name: kylin-gateway
@@ -41,9 +61,10 @@ kylin:
       query-route-default: true
       refresh-interval: 3s
     ke:
-      version: 4x
+      version: mdx
     health:
-      check-url: /kylin/api/health
+      check-url: /api/system/health
+      load_url: /api/system/load
       rest-template:
         connect-timeout: 1500
         read-timeout: 5000
@@ -51,7 +72,7 @@ kylin:
         retry-times: 3
         interval-seconds: 3
     datasource:
-      type: file
+      type: config
       route-table-file-path: ${gateway.home}/conf/route_table
       driver-class-name: com.mysql.jdbc.Driver
       url: jdbc:mysql://10.3.1.17:3306/leotest
@@ -60,5 +81,3 @@ kylin:
       table-name: km_route_table
 
 management.endpoints.web.exposure.include: health, gateway
-
-server.port: 7777
