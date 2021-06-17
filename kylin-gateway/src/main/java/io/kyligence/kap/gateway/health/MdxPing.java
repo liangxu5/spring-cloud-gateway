@@ -24,10 +24,10 @@ public class MdxPing implements IPing {
 	@Autowired
 	private RestTemplate restTemplate;
 
-	@Value("${kylin.gateway.health.check-url:/api/system/health}")
+	@Value("${mdx.check-url:/api/system/health}")
 	private String healthUrl;
 
-	@Value("${kylin.gateway.health.load_url:/api/system/load}")
+	@Value("${mdx.load_url:/api/system/load}")
 	private String loadUrl;
 
 	@Override

@@ -111,6 +111,12 @@
 			<artifactId>fastjson</artifactId>
 			<version>1.2.75</version>
 		</dependency>
+		<dependency>
+			<groupId>com.github.sanjusoftware</groupId>
+			<artifactId>yamlbeans</artifactId>
+			<version>1.11</version>
+		</dependency>
+
 	</dependencies>
 
 	<profiles>

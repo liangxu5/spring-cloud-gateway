@@ -8,11 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 @Configuration
-@ConfigurationProperties(prefix = "mdx")
 @Data
+@ConfigurationProperties(prefix = "mdx")
 public class MdxConfig {
-
-	private Long cacheTime;
 
 	List<ProxyInfo> proxy;
 
@@ -23,13 +21,10 @@ public class MdxConfig {
 
 		private String host;
 
-		private Map<String, String> config;
-
 		private List<String> servers;
 
 	}
 
-	// TODO 用于配置更改
 	public void setProxyInfo(List<ProxyInfo> proxyInfos) {
 		this.proxy = proxyInfos;
 	}

@@ -43,7 +43,7 @@ public class MdxLoadBalancerClientFilter extends LoadBalancerClientFilter
 	 * key: BI request: user_project, normal request: host
 	 * value: ServerInfo, contains: server ip:port, cache start time and cache update time
 	 */
-	private Map<String, ServerInfo> serverMap = new ConcurrentHashMap<>();
+	public static Map<String, ServerInfo> serverMap = new ConcurrentHashMap<>();
 
 	private final ScheduledExecutorService scheduledExecService = new ScheduledThreadPoolExecutor(1,
 			new DefaultThreadFactory("clean-expire-server"));

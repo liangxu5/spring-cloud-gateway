@@ -41,7 +41,7 @@ function start_gateway() {
     fi
     echo `date '+%Y-%m-%d %H:%M:%S '`"Starting Gateway..."
 
-    gateway_properties="${GATEWAY_HOME}/conf/gateway.properties"
+    gateway_properties="${GATEWAY_HOME}/conf/application.yml"
 
     cd ${GATEWAY_HOME}/server
 
@@ -80,6 +80,17 @@ function stop_gateway() {
     fi
 }
 
+function reload () {
+    gateway_properties="${GATEWAY_HOME}/conf/application.yml"
+    GATEWAY_PORT=$(sed '/^server.port:/!d;s/.*://' "${gateway_properties}")
+    result=$(curl -s -X GET --header 'Accept: application/json' http://127.0.0.1:"${GATEWAY_PORT}"/api/gateway/admin/reload)
+    if [[ "${result}" =~ "success" ]]; then
+         echo "Upgrade config success..."
+    else
+         echo "Upgrade config failed, Please check gateway.log or whether server is normal..."
+    fi
+}
+
 if [[ "$1" == "start" ]]; then
     start_gateway
 elif [[ "$1" == "stop" ]]; then
@@ -88,6 +99,9 @@ elif [[ "$1" == "restart" ]]; then
     echo `date '+%Y-%m-%d %H:%M:%S '`"Restarting Gateway..."
     stop_gateway
     start_gateway
+elif [[ "$1" == "reload" ]]; then
+    echo `date '+%Y-%m-%d %H:%M:%S '`"Reload Gateway config..."
+    reload
 else
     quit "Usage: 'gateway.sh start' or 'gateway.sh stop' or 'gateway.sh restart'"
 fi

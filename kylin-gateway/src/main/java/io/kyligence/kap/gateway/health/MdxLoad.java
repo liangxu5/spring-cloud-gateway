@@ -1,5 +1,6 @@
 package io.kyligence.kap.gateway.health;
 
+import io.kyligence.kap.gateway.filter.MdxLoadBalancerClientFilter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
@@ -19,7 +20,7 @@ public class MdxLoad {
 	 * key: server
 	 * value: loadInfo
 	 */
-	private static final Map<String, LoadInfo> LOAD_INFO_MAP = new ConcurrentHashMap<>();
+	public static final Map<String, LoadInfo> LOAD_INFO_MAP = new ConcurrentHashMap<>();
 
 	private static Double memWeight;
 
@@ -27,15 +28,17 @@ public class MdxLoad {
 
 	private static Long cacheTime;
 
+	private static Long serverSize;
+
 	public static void updateServerByMemLoad(String serverId, double memLoad) {
-		if (StringUtils.isNotBlank(serverId)) {
+		if (StringUtils.isBlank(serverId)) {
 			return;
 		}
 		LoadInfo loadInfo = LOAD_INFO_MAP.get(serverId);
 		if (loadInfo == null) {
 			loadInfo = new LoadInfo(0D, 0D, 0D);
 		}
-		double nodeLoad = memLoad * memWeight + loadInfo.getQueryLoad() / 50 * queryWeight;
+		double nodeLoad = memLoad * memWeight + loadInfo.getQueryLoad() / serverSize * queryWeight;
 		loadInfo.setMemLoad(memLoad);
 		loadInfo.setNodeLoad(nodeLoad);
 		LOAD_INFO_MAP.put(serverId, loadInfo);
@@ -53,7 +56,7 @@ public class MdxLoad {
 		if (queryNum < 0) {
 			return;
 		}
-		double nodeLoad = loadInfo.getMemLoad() * memWeight + queryNum / 50 * queryWeight;
+		double nodeLoad = loadInfo.getMemLoad() * memWeight + queryNum / serverSize * queryWeight;
 		loadInfo.setQueryLoad(queryNum);
 		loadInfo.setNodeLoad(nodeLoad);
 		LOAD_INFO_MAP.put(serverId, loadInfo);
@@ -73,6 +76,17 @@ public class MdxLoad {
 
 	public static void removeServer(String serverKey) {
 		LOAD_INFO_MAP.remove(serverKey);
+		for (Map.Entry<String, MdxLoadBalancerClientFilter.ServerInfo> entry :
+				MdxLoadBalancerClientFilter.serverMap.entrySet()) {
+			MdxLoadBalancerClientFilter.ServerInfo serverInfo = entry.getValue();
+			if (serverInfo == null) {
+				continue;
+			}
+			if (serverKey.equals(serverInfo.getServer())) {
+				MdxLoadBalancerClientFilter.serverMap.remove(entry.getKey());
+			}
+		}
+		MdxLoadBalancerClientFilter.serverMap.remove(serverKey);
 	}
 
 	@Data
@@ -96,9 +110,14 @@ public class MdxLoad {
 		MdxLoad.queryWeight = queryWeight;
 	}
 
-	@Value(value = "${mdx.cacheTime}")
-	public void setCacheTime(long cacheTime) {
+	@Value(value = "${mdx.serverSize}")
+	public void setServerSize(long cacheTime) {
 		MdxLoad.cacheTime = cacheTime;
+	}
+
+	@Value(value = "${mdx.cacheTime}")
+	public void setCacheTime(long serverSize) {
+		MdxLoad.serverSize = serverSize;
 	}
 
 	public static long getCacheTime() {

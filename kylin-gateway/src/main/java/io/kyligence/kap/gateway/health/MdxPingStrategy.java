@@ -169,7 +169,6 @@ public class MdxPingStrategy implements IPingStrategy, ApplicationListener<Kylin
 							break;
 						case WARN:
 						default:
-							MdxLoad.removeServer(server.getId());
 							break;
 					}
 				} else if (ping.isAlive(server)) {

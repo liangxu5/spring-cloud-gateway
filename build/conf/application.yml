@@ -47,7 +47,7 @@ server:
       buffered: true
       directory: logs
       file-date-format: .yyyy-MM-dd
-      pattern: '%{yyyy-MM-dd HH:mm:ss,SSS}t %h %l %u "%r" %s %b %D'
+      pattern: "%h %l %u %t \"%r\" %s %b %D %{User-Agent}i"
       rotate: true
       rename-on-rotate: false
       prefix: access_log
